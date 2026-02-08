@@ -1027,10 +1027,12 @@ def history_page():
     return render_template('history.html')
 
 if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 5001))
     print("\n" + "="*60)
     print("🚀 LiveKit AI Voice - Admin Dashboard")
     print("="*60)
-    print("📍 Open http://localhost:5001 in your browser")
+    print(f"📍 Running on port {port}")
     print("="*60 + "\n")
-    app.run(debug=True, port=5001, host='0.0.0.0')
+    app.run(debug=False, port=port, host='0.0.0.0')
 
