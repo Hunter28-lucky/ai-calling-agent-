@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Call - AI Voice Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f14;
+            --bg-secondary: #16161f;
+            --bg-tertiary: #1c1c28;
+            --bg-card: linear-gradient(145deg, rgba(28, 28, 40, 0.6) 0%, rgba(22, 22, 31, 0.4) 100%);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(139, 92, 246, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --accent-primary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%);
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --success: #22c55e;
+            --success-gradient: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+            --error: #ef4444;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(167, 139, 250, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Sidebar - Same as dashboard */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-right: 1px solid var(--border-color);
+            padding: 28px 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .logo-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: white;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-section {
+            margin-bottom: 32px;
+            flex: 1;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0 16px;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--accent-gradient);
+            border-radius: 0 4px 4px 0;
+            transition: height 0.25s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.08);
+            color: var(--text-primary);
+        }
+
+        .nav-item:hover::before {
+            height: 24px;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active::before {
+            height: 24px;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px 48px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Call Interface */
+        .call-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .call-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(139, 92, 246, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Phone Input */
+        .phone-input-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .phone-input {
+            width: 100%;
+            padding: 20px 24px;
+            padding-left: 60px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: inherit;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .phone-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--accent-glow), 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .phone-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+
+        .phone-prefix {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Dial Pad */
+        .dial-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .dial-btn {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dial-btn:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        .dial-btn:active {
+            transform: scale(0.95);
+        }
+
+        .dial-btn sub {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Call Button */
+        .call-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--success-gradient);
+            border: none;
+            border-radius: 16px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(34, 197, 94, 0.3);
+        }
+
+        .call-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(34, 197, 94, 0.4);
+        }
+
+        .call-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .call-btn.calling {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            animation: pulse-call 1.5s infinite;
+        }
+
+        @keyframes pulse-call {
+
+            0%,
+            100% {
+                box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 8px 48px rgba(245, 158, 11, 0.5);
+            }
+        }
+
+        /* Recent Calls */
+
+        .call-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .call-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .call-item:hover {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: var(--accent-primary);
+        }
+
+        .call-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .call-info {
+            flex: 1;
+        }
+
+        .call-number {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .call-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .call-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .call-status.completed {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+
+        .call-status.failed {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+        }
+
+        .call-status.dialing {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .redial-btn {
+            padding: 8px 16px;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .redial-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            padding: 16px 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        @media (max-width: 1024px) {
+            .call-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                </svg></div>
+            <div class="logo-text"><span>Voice</span> Agent</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Menu</div>
+            <a href="/" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M4 13h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zm0 8h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1zm10 0h6c.55 0 1-.45 1-1v-8c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zM13 4v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1z" />
+                </svg>Dashboard</a>
+            <a href="/call" class="nav-item active"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                </svg>Make a Call</a>
+            <a href="/contacts" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>Contacts</a>
+            <a href="/history" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                </svg>Call History</a>
+            <div class="nav-section-title" style="margin-top: 32px;">Settings</div>
+            <a href="/agent" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>Agent Script</a>
+            <a href="/settings" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                </svg>Settings</a>
+        </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">Call initiated!</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="page-header">
+            <h1 class="page-title">Make a Call</h1>
+            <p class="page-subtitle">Enter a phone number to start an AI-powered conversation</p>
+        </header>
+
+        <div class="call-container">
+            <!-- Dial Pad Panel -->
+            <div class="call-panel">
+                <div class="panel-title">
+                    <div class="panel-icon">📞</div>
+                    <span>Dial Pad</span>
+                </div>
+
+                <div class="phone-input-wrapper">
+                    <span class="phone-prefix">+</span>
+                    <input type="tel" class="phone-input" id="phoneInput" placeholder="Enter phone number" value="">
+                </div>
+
+                <div class="dial-pad">
+                    <button class="dial-btn" onclick="addDigit('1')">1<sub>&nbsp;</sub></button>
+                    <button class="dial-btn" onclick="addDigit('2')">2<sub>ABC</sub></button>
+                    <button class="dial-btn" onclick="addDigit('3')">3<sub>DEF</sub></button>
+                    <button class="dial-btn" onclick="addDigit('4')">4<sub>GHI</sub></button>
+                    <button class="dial-btn" onclick="addDigit('5')">5<sub>JKL</sub></button>
+                    <button class="dial-btn" onclick="addDigit('6')">6<sub>MNO</sub></button>
+                    <button class="dial-btn" onclick="addDigit('7')">7<sub>PQRS</sub></button>
+                    <button class="dial-btn" onclick="addDigit('8')">8<sub>TUV</sub></button>
+                    <button class="dial-btn" onclick="addDigit('9')">9<sub>WXYZ</sub></button>
+                    <button class="dial-btn" onclick="addDigit('*')">*</button>
+                    <button class="dial-btn" onclick="addDigit('0')">0<sub>+</sub></button>
+                    <button class="dial-btn" onclick="deleteDigit()">⌫</button>
+                </div>
+
+                <button class="call-btn" id="callBtn" onclick="makeCall()">
+                    <span>📞</span> Start Call
+                </button>
+            </div>
+
+            <!-- Recent Calls Panel -->
+            <div class="call-panel recent-calls">
+                <div class="panel-title">
+                    <div class="panel-icon">📋</div>
+                    <span>Recent Calls</span>
+                </div>
+
+                <div class="call-list" id="callList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📞</div>
+                        <p>No recent calls yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const phoneInput = document.getElementById('phoneInput');
+        const callBtn = document.getElementById('callBtn');
+        const toast = document.getElementById('toast');
+        let isCalling = false;
+        let activeCallId = null;
+        let callStartTime = null;
+        let callTimer = null;
+        let statusPoller = null;
+
+        loadRecentCalls();
+
+        function addDigit(digit) {
+            phoneInput.value += digit;
+            phoneInput.focus();
+        }
+
+        function deleteDigit() {
+            phoneInput.value = phoneInput.value.slice(0, -1);
+            phoneInput.focus();
+        }
+
+        async function makeCall() {
+            let phone = phoneInput.value.trim();
+            if (!phone) {
+                showToast('Please enter a phone number', 'error');
+                return;
+            }
+
+            if (!phone.startsWith('+')) phone = '+' + phone;
+
+            isCalling = true;
+            callBtn.classList.add('calling');
+            callBtn.innerHTML = '<span>📞</span> Calling...';
+            callBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/call', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: phone })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Call started! Agent is dialing...', 'success');
+                    phoneInput.value = '';
+                    activeCallId = result.call_id;
+                    callStartTime = new Date();
+
+                    // Start live status updates
+                    startCallTracking();
+
+                    setTimeout(loadRecentCalls, 1000);
+                } else {
+                    showToast(result.error || 'Failed to make call', 'error');
+                    resetCallBtn();
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+                resetCallBtn();
+            }
+        }
+
+        function startCallTracking() {
+            // Show active call indicator
+            callBtn.innerHTML = '<span>🔴</span> <span id="callStatus">Dialing...</span> <span id="callDuration">0:00</span>';
+            callBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
+            callBtn.onclick = endCall;
+
+            // Start timer
+            callTimer = setInterval(() => {
+                if (callStartTime) {
+                    const elapsed = Math.floor((new Date() - callStartTime) / 1000);
+                    const mins = Math.floor(elapsed / 60);
+                    const secs = elapsed % 60;
+                    const durationEl = document.getElementById('callDuration');
+                    if (durationEl) durationEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                    // Show estimated cost (₹3.75/min = ₹0.0625/sec)
+                    const cost = (elapsed * 0.0625).toFixed(2);
+                    const costEl = document.getElementById('callCost');
+                    if (costEl) costEl.textContent = `₹${cost}`;
+                }
+            }, 1000);
+
+            // Poll for status updates
+            statusPoller = setInterval(async () => {
+                if (activeCallId) {
+                    try {
+                        const response = await fetch(`/api/calls?limit=1`);
+                        const data = await response.json();
+                        if (data.success && data.calls.length > 0) {
+                            const call = data.calls.find(c => c.id === activeCallId);
+                            if (call) {
+                                const statusEl = document.getElementById('callStatus');
+                                if (statusEl) {
+                                    const statusText = {
+                                        'dialing': '📞 Dialing...',
+                                        'ringing': '🔔 Ringing...',
+                                        'connected': '🟢 Connected',
+                                        'in_progress': '💬 In Conversation',
+                                        'completed': '✅ Completed',
+                                        'failed': '❌ Failed',
+                                        'no_answer': '📵 No Answer'
+                                    };
+                                    statusEl.textContent = statusText[call.status] || call.status;
+                                }
+
+                                // Stop tracking if call ended
+                                if (['completed', 'failed', 'no_answer'].includes(call.status)) {
+                                    stopCallTracking();
+                                    loadRecentCalls();
+                                }
+                            }
+                        }
+                    } catch (e) { console.error(e); }
+                }
+            }, 2000);
+        }
+
+        function stopCallTracking() {
+            if (callTimer) clearInterval(callTimer);
+            if (statusPoller) clearInterval(statusPoller);
+            activeCallId = null;
+            callStartTime = null;
+            resetCallBtn();
+        }
+
+        function resetCallBtn() {
+            isCalling = false;
+            callBtn.classList.remove('calling');
+            callBtn.innerHTML = '<span>📞</span> Start Call';
+            callBtn.style.background = '';
+            callBtn.disabled = false;
+            callBtn.onclick = makeCall;
+        }
+
+        async function endCall() {
+            if (!activeCallId) return;
+
+            // Update call status to failed (user ended)
+            try {
+                await fetch(`/api/calls/${activeCallId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        status: 'completed',
+                        duration: Math.floor((new Date() - callStartTime) / 1000)
+                    })
+                });
+            } catch (e) { console.error(e); }
+
+            stopCallTracking();
+            showToast('Call ended', 'success');
+            loadRecentCalls();
+        }
+
+        async function loadRecentCalls() {
+            try {
+                const response = await fetch('/api/calls?limit=10');
+                const data = await response.json();
+
+                if (data.success && data.calls.length > 0) {
+                    const list = document.getElementById('callList');
+                    list.innerHTML = data.calls.map(call => {
+                        const date = new Date(call.created_at);
+                        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const statusClass = call.status || 'dialing';
+                        return `
+                            <div class="call-item" onclick="redial('${call.phone_number}')">
+                                <div class="call-avatar">📞</div>
+                                <div class="call-info">
+                                    <div class="call-number">${call.phone_number}</div>
+                                    <div class="call-time">${date.toLocaleDateString()} at ${timeStr}</div>
+                                </div>
+                                <span class="call-status ${statusClass}">${call.status || 'dialing'}</span>
+                                <button class="redial-btn" onclick="event.stopPropagation(); redial('${call.phone_number}')">Redial</button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load calls:', e);
+            }
+        }
+
+        function redial(phone) {
+            phoneInput.value = phone.replace('+', '');
+            phoneInput.focus();
+        }
+
+        function showToast(message, type = 'success') {
+            const toastEl = document.getElementById('toast');
+            const iconEl = document.getElementById('toastIcon');
+            const msgEl = document.getElementById('toastMessage');
+
+            iconEl.textContent = type === 'success' ? '✅' : '❌';
+            msgEl.textContent = message;
+            toastEl.className = 'toast show ' + type;
+
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
+
+        phoneInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') makeCall();
+        });
+    </script>
+</body>
+
+</html>

@@ -105,15 +105,24 @@ class TransferFunctions(llm.ToolContext):
         logger.info(f"Looking up user: {phone}")
         return f"User found: Shreyas Raj. Status: Premium. Last order: Coffee setup (Delivered)."
 
-    @llm.function_tool(description="Transfer the call to a human support agent or another phone number.")
+    @llm.function_tool(description="Transfer the call to a human support agent or another phone number. You can specify 'sales', 'support', 'manager', or a phone number.")
     async def transfer_call(self, destination: Optional[str] = None):
         """
-        Transfer the call.
+        Transfer the call to a named destination or phone number.
+        Named destinations: 'sales', 'support', 'manager'
+        Or provide a phone number like '+919876543210'
         """
+        # Resolve named destination to phone number
+        if destination and destination.lower() in config.TRANSFER_DESTINATIONS:
+            dest_info = config.TRANSFER_DESTINATIONS[destination.lower()]
+            destination = dest_info.get("number")
+            logger.info(f"Resolved named destination '{destination}' to {dest_info}")
+        
         if destination is None:
             destination = config.DEFAULT_TRANSFER_NUMBER
             if not destination:
                  return "Error: No default transfer number configured."
+        
         if "@" not in destination:
             # If no domain is provided, append the SIP domain
             if config.SIP_DOMAIN:
@@ -130,8 +139,6 @@ class TransferFunctions(llm.ToolContext):
         logger.info(f"Transferring call to {destination}")
         
         # Determine the participant identity
-        # For outbound calls initiated by this agent, the participant identity is typically "sip_<phone_number>"
-        # For inbound, we might need to find the remote participant.
         participant_identity = None
         
         # If we stored the phone number from metadata, we can construct the identity
@@ -157,7 +164,7 @@ class TransferFunctions(llm.ToolContext):
                     play_dialtone=False
                 )
             )
-            return "Transfer initiated successfully."
+            return f"Transfer initiated successfully. {config.TRANSFER_ANNOUNCEMENT}"
         except Exception as e:
             logger.error(f"Transfer failed: {e}")
             return f"Error executing transfer: {e}"

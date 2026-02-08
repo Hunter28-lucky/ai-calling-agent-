@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Script - AI Voice Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f14;
+            --bg-secondary: #16161f;
+            --bg-tertiary: #1c1c28;
+            --bg-card: linear-gradient(145deg, rgba(28, 28, 40, 0.6) 0%, rgba(22, 22, 31, 0.4) 100%);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(139, 92, 246, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --accent-primary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%);
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --success: #22c55e;
+            --error: #ef4444;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(167, 139, 250, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-right: 1px solid var(--border-color);
+            padding: 28px 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .logo-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: white;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-section {
+            margin-bottom: 32px;
+            flex: 1;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0 16px;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--accent-gradient);
+            border-radius: 0 4px 4px 0;
+            transition: height 0.25s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.08);
+            color: var(--text-primary);
+        }
+
+        .nav-item:hover::before {
+            height: 24px;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active::before {
+            height: 24px;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px 48px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+            padding-bottom: 120px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+        }
+
+        /* Templates Grid */
+        .templates-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .template-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .template-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .template-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .template-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Editor Section */
+        .editor-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .editor-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .editor-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .editor-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .form-group textarea.large {
+            min-height: 300px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Save Bar */
+        .save-bar {
+            position: fixed;
+            bottom: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 20px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+        }
+
+        .save-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .save-note {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            right: 32px;
+            padding: 16px 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        @media (max-width: 1200px) {
+            .editor-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px 20px;
+            }
+
+            .save-bar {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                </svg></div>
+            <div class="logo-text"><span>Voice</span> Agent</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Menu</div>
+            <a href="/" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M4 13h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zm0 8h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1zm10 0h6c.55 0 1-.45 1-1v-8c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zM13 4v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1z" />
+                </svg>Dashboard</a>
+            <a href="/call" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                </svg>Make a Call</a>
+            <a href="/contacts" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>Contacts</a>
+            <a href="/history" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                </svg>Call History</a>
+            <div class="nav-section-title" style="margin-top: 32px;">Settings</div>
+            <a href="/agent" class="nav-item active"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>Agent Script</a>
+            <a href="/settings" class="nav-item"><svg viewBox="0 0 24 24">
+                    <path
+                        d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                </svg>Settings</a>
+        </div>
+    </nav>
+
+    <div class="toast" id="toast">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">Script saved!</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="page-header">
+            <h1 class="page-title">Agent Script</h1>
+            <p class="page-subtitle">Customize what your AI assistant says during calls</p>
+        </header>
+
+        <!-- Templates -->
+        <div class="templates-section">
+            <h3 class="section-title">🎯 Quick Templates</h3>
+            <div class="templates-grid" id="templatesGrid"></div>
+        </div>
+
+        <!-- Editor -->
+        <div class="editor-section">
+            <div class="editor-card">
+                <div class="editor-header">
+                    <div class="editor-icon">💬</div>
+                    <div class="editor-title">Greetings</div>
+                </div>
+                <div class="form-group">
+                    <label>Initial Greeting</label>
+                    <textarea id="initial_greeting"
+                        placeholder="What the agent says when the call connects..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Fallback Greeting</label>
+                    <textarea id="fallback_greeting"
+                        placeholder="If the person doesn't respond initially..."></textarea>
+                </div>
+            </div>
+
+            <div class="editor-card">
+                <div class="editor-header">
+                    <div class="editor-icon">🧠</div>
+                    <div class="editor-title">Agent Personality</div>
+                </div>
+                <div class="form-group">
+                    <label>System Prompt</label>
+                    <textarea id="system_prompt" class="large"
+                        placeholder="Define the agent's personality, goals, and behavior..."></textarea>
+                    <div class="char-count"><span id="charCount">0</span> characters</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Save Bar -->
+    <div class="save-bar">
+        <div class="save-info">
+            <span class="save-note">💡 Restart agent after saving to apply changes</span>
+        </div>
+        <button type="button" class="btn btn-primary" id="saveBtn" onclick="saveScript()">
+            💾 Save Script
+        </button>
+    </div>
+
+    <script>
+        const templates = [
+            {
+                id: 'sales', icon: '🌐', name: 'Website Sales', desc: 'Sell website development services',
+                prompt: 'You are a friendly sales rep from a web development agency. Your goal is to book consultations and explain website benefits.',
+                greeting: "Hi! This is Alex from Creative Web Solutions. I noticed your business might benefit from a modern website. Do you have a moment to chat?",
+                fallback: "Hello? Are you there? I was hoping to share how we can help your business grow online."
+            },
+            {
+                id: 'appointment', icon: '📅', name: 'Appointment Setter', desc: 'Book meetings and appointments',
+                prompt: 'You are a professional appointment setter. Your goal is to schedule consultations. Be polite, efficient, and helpful.',
+                greeting: "Hi! I'm calling to help you schedule your consultation. Do you have your calendar handy?",
+                fallback: "Hello? I'm here to help you book an appointment at a time that works for you."
+            },
+            {
+                id: 'support', icon: '🎧', name: 'Customer Support', desc: 'Handle customer queries',
+                prompt: 'You are a helpful customer support agent. Be empathetic, patient, and solution-oriented. Always prioritize customer satisfaction.',
+                greeting: "Hello! Thank you for calling support. How can I assist you today?",
+                fallback: "Hi there! I'm here to help. What can I do for you?"
+            },
+            {
+                id: 'lead', icon: '🎯', name: 'Lead Qualifier', desc: 'Qualify leads and gather info',
+                prompt: 'You are a lead qualification specialist. Gather information about budget, timeline, and needs. Be professional and inquisitive.',
+                greeting: "Hi! I'm following up on your inquiry. I'd love to learn more about what you're looking for.",
+                fallback: "Hello? I was hoping to ask you a few quick questions to better understand your needs."
+            },
+            {
+                id: 'reminder', icon: '⏰', name: 'Reminder Agent', desc: 'Send reminders and follow-ups',
+                prompt: 'You are a friendly reminder agent. Confirm appointments and provide helpful information. Be warm and brief.',
+                greeting: "Hi! This is a friendly reminder about your upcoming appointment. Just wanted to confirm you're all set!",
+                fallback: "Hello! I'm calling with a quick reminder. Do you have a moment?"
+            }
+        ];
+
+        // Render templates
+        document.getElementById('templatesGrid').innerHTML = templates.map(t => `
+            <div class="template-card" onclick="useTemplate('${t.id}')">
+                <div class="template-icon">${t.icon}</div>
+                <div class="template-name">${t.name}</div>
+                <div class="template-desc">${t.desc}</div>
+            </div>
+        `).join('');
+
+        loadScript();
+
+        async function loadScript() {
+            try {
+                const response = await fetch('/api/agent');
+                const data = await response.json();
+                if (data.success && data.config) {
+                    document.getElementById('system_prompt').value = data.config.system_prompt || '';
+                    document.getElementById('initial_greeting').value = data.config.initial_greeting || '';
+                    document.getElementById('fallback_greeting').value = data.config.fallback_greeting || '';
+                    updateCharCount();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function useTemplate(id) {
+            const t = templates.find(x => x.id === id);
+            if (!t) return;
+
+            document.querySelectorAll('.template-card').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            document.getElementById('system_prompt').value = t.prompt;
+            document.getElementById('initial_greeting').value = t.greeting;
+            document.getElementById('fallback_greeting').value = t.fallback;
+            updateCharCount();
+            showToast(`${t.name} template loaded!`, 'success');
+        }
+
+        async function saveScript() {
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Saving...';
+
+            const config = {
+                system_prompt: document.getElementById('system_prompt').value,
+                initial_greeting: document.getElementById('initial_greeting').value,
+                fallback_greeting: document.getElementById('fallback_greeting').value
+            };
+
+            try {
+                const response = await fetch('/api/agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Script saved! Restart agent to apply.', 'success');
+                } else {
+                    showToast(result.error || 'Failed to save', 'error');
+                }
+            } catch (e) {
+                showToast('Connection error', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '💾 Save Script';
+            }
+        }
+
+        function updateCharCount() {
+            const count = document.getElementById('system_prompt').value.length;
+            document.getElementById('charCount').textContent = count;
+        }
+
+        document.getElementById('system_prompt').addEventListener('input', updateCharCount);
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = type === 'success' ? '✅' : '❌';
+            document.getElementById('toastMessage').textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+
+</html>
