@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY . .
 
-# Expose port (if needed, e.g. for healthchecks)
-EXPOSE 8080
+# Expose port
+EXPOSE 5001
 
-# Run the agent
-CMD ["python", "agent.py", "start"]
+# Run the web app (dashboard)
+CMD ["gunicorn", "web_app:app", "--bind", "0.0.0.0:5001"]
