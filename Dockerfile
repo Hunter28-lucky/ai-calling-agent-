@@ -19,5 +19,5 @@ COPY . .
 # Expose port
 EXPOSE 5001
 
-# Run the web app (dashboard)
-CMD ["gunicorn", "web_app:app", "--bind", "0.0.0.0:5001"]
+# Run the web app - Railway sets PORT env automatically
+CMD gunicorn web_app:app --bind 0.0.0.0:${PORT:-5001}
